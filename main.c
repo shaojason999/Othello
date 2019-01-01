@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 int gameboard[9][9];	//use gameboard[1][1]~gameboard[8][8]
 int move;
@@ -12,7 +13,6 @@ void init()
 	gameboard[4][4]=gameboard[5][5]=2;
 	gameboard[4][5]=gameboard[5][4]=1;
 	move=0;
-
 }
 int count_color(int color)
 {
@@ -27,7 +27,10 @@ int count_color(int color)
 void show_gameboard()
 {
 	int i,j;
+	printf(" | 1 2 3 4 5 6 7 8\n");
+	printf("------------------\n");
 	for(i=1;i<9;++i){
+		printf("%d| ",i);
 		for(j=1;j<9;++j)
 			printf("%d ",gameboard[i][j]);
 		printf("\n");
@@ -137,7 +140,9 @@ int game(int turn)
 		if(turn==0){
 			while(scanf("%d %d",&row,&column)){
 				if(check_legal(row,column,player1_color)){
+					system("clear");
 					show_gameboard();
+					printf("player: %d %d\n",row,column);
 					printf("next move: color %d\n",computer_color);
 					break;
 				}else
@@ -149,7 +154,7 @@ int game(int turn)
 				for(column=1;column<=8;++column)
 					if(check_legal(row,column,computer_color)){
 						show_gameboard();
-						printf("computer: row: %d column %d\n",row,column);
+						printf("computer: %d %d\n",row,column);
 						printf("next move: color %d\n",player1_color);
 						row=100;
 						break;
