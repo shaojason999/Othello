@@ -1,5 +1,4 @@
 /*First hand is 1(black), second hand is 2(white), blank is 3*/
-1.
 
 #include <stdio.h>
 #include <string.h>
