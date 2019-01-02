@@ -4,6 +4,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define DEPTH 4
+
 //int gameboard[9][9];	//use gameboard[1][1]~gameboard[8][8]
 int hash[65536];
 int move;
@@ -52,18 +54,41 @@ void show_gameboard()
 		check>>=1;
 	}
 }
-void alpha_beta(int color)
+void alpha_beta(int alpha, int beta, int my_color, unsigned long long my_board, unsigned long long opponent_board)	//row and column is from 1 to 8
 {
-	int i,j;
-	int row[60],column[60];
-	int mobility=0;
-//	for(i=1;i<9;++i)
-//		for(j=1;j<9;++j)
-//			if(check_legal_and_flip(i,j,color,0)){
-//				row[mobility]=i;
-//				column[mobility++]=j;
-//			}
+	unsigned long long check=1;
+	unsigned long long temp_board[3];
+	int opponent_color;
+	check<<=63;
+	/*init set*/
+	if(my_color==1)
+		opponent_color=2;
+	else
+		opponent_color=1;
+	temp_board[my_color]=my_board;
+	temp_board[opponent_color]=opponent_board;
 
+	if(depth<DEPTH){
+		m=alpha;
+		for(i=0;i<64;++i)
+			if((my_board&check)==0 && (opponent_board&check)==0)
+				if(check_legal_flip(i/8+1,i%8+1,my_color,1,&temp_board[my_color],&temp_board[opponent_color])){	//check and flip
+					++depth;
+					t=-alpha_beta(-beta,-m,opponent_color, temp_board[opponent_color], temp_board[my_color]);
+					--depth;
+					if(t>m)
+						m=t;
+					if(m>=beta)
+						return m;
+					temp_board[my_color]=my_board;
+					temp_board[opponent_color]=opponent_board;
+				}
+
+//		if(i==64){
+//			printf("no legal move, pass\n");
+//			return;
+		}
+	}
 
 }
 void init()
@@ -120,10 +145,9 @@ int game(int turn)
 				printf("computer: %d %d\t(%d %d)\n",row,column,row-1,column-1);
 				printf("next move: color %d\n",player_color);
 			}else{
-//				alpha_beta(computer_color);
-//	board[1]=black;
-//	board[2]=white;
-				for(row=1;row<=8;++row)
+				alpha_beta(computer_color);
+
+/*				for(row=1;row<=8;++row)
 					for(column=1;column<=8;++column)
 						if(check_legal_flip(row,column,computer_color,1,&true_board[computer_color],&true_board[player_color])){
 							show_gameboard();
@@ -136,7 +160,7 @@ int game(int turn)
 					printf("no legal move, pass\n");
 					move--;
 				}
-			}
+*/			}
 			turn=0;
 		}
 	}
