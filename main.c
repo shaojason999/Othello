@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-int gameboard[9][9];	//use gameboard[1][1]~gameboard[8][8]
+//int gameboard[9][9];	//use gameboard[1][1]~gameboard[8][8]
 int hash[65536];
 int move;
 unsigned long long int true_board[3];
@@ -20,24 +20,36 @@ unsigned int hash_function(unsigned long long int board)
 }
 int count_color(int color)
 {
-	int i,j;
+	int i;
 	int count=0;
-	for(i=1;i<9;++i)
-		for(j=1;j<9;++j)
-			if(gameboard[i][j]==color)
-				++count;
+	unsigned long long check=1;
+	check<<=63;
+	for(i=0;i<64;++i){
+		if((true_board[color]&check)!=0)
+			++count;
+		check>>=1;
+	}
 	return count;
 }
 void show_gameboard()
 {
-	int i,j;
+	int i;
+	unsigned long long check=1;
+	check<<=63;
 	printf(" | 1 2 3 4 5 6 7 8\n");
 	printf("------------------\n");
-	for(i=1;i<9;++i){
-		printf("%d| ",i);
-		for(j=1;j<9;++j)
-			printf("%d ",gameboard[i][j]);
-		printf("\n");
+	for(i=0;i<64;++i){
+		if(i%8==0)
+			printf("%d| ",i/8+1);
+		if((true_board[1]&check)!=0)
+			printf("1 ");
+		else if((true_board[2]&check)!=0)
+			printf("2 ");
+		else
+			printf("0 ");
+		if(i%8==7)
+			printf("\n");
+		check>>=1;
 	}
 }
 void alpha_beta(int color)
@@ -56,10 +68,10 @@ void alpha_beta(int color)
 }
 void init()
 {
-	memset(gameboard,0,sizeof(gameboard));
+//	memset(gameboard,0,sizeof(gameboard));
 	memset(hash,0,sizeof(hash));
-	gameboard[4][4]=gameboard[5][5]=1;
-	gameboard[4][5]=gameboard[5][4]=2;
+//	gameboard[4][4]=gameboard[5][5]=1;
+//	gameboard[4][5]=gameboard[5][4]=2;
 	true_board[1]=0x0000001008000000;
 	true_board[2]=0x0000000810000000;
 	init_hash_table();

@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-extern int gameboard[9][9];    //use gameboard[1][1]~gameboard[8][8]
+//extern int gameboard[9][9];    //use gameboard[1][1]~gameboard[8][8]
 unsigned long long shift(int i, int j)
 {
 	unsigned long long temp=1;
@@ -32,7 +32,7 @@ int check_legal_flip(int row, int column, int color, int flip, unsigned long lon
 				if(flip==0)
 					return legal;
 				for(j=i+1;j<row;++j){
-					gameboard[j][column]=color;
+//					gameboard[j][column]=color;
 					board[color]|=shift(j,column);
 					board[opponent_color]&=~shift(j,column);
 				}
@@ -46,9 +46,8 @@ int check_legal_flip(int row, int column, int color, int flip, unsigned long lon
 				legal=1;
 				if(flip==0)
 					return legal;
-				printf("%d %d %d\n",j=i-1,column,color);
 				for(j=i-1;j>row;--j){
-					gameboard[j][column]=color;
+//					gameboard[j][column]=color;
 					board[color]|=shift(j,column);
 					board[opponent_color]&=~shift(j,column);
 				}
@@ -63,7 +62,7 @@ int check_legal_flip(int row, int column, int color, int flip, unsigned long lon
 				if(flip==0)
 					return legal;
 				for(j=i-1;j>column;--j){
-					gameboard[row][j]=color;
+//					gameboard[row][j]=color;
 					board[color]|=shift(row,j);
 					board[opponent_color]&=~shift(row,j);
 				}
@@ -78,7 +77,7 @@ int check_legal_flip(int row, int column, int color, int flip, unsigned long lon
 				if(flip==0)
 					return legal;
 				for(j=i+1;j<column;++j){
-					gameboard[row][j]=color;
+//					gameboard[row][j]=color;
 					board[color]|=shift(row,j);
 					board[opponent_color]&=~shift(row,j);
 				}
@@ -93,7 +92,7 @@ int check_legal_flip(int row, int column, int color, int flip, unsigned long lon
 				if(flip==0)
 					return legal;
 				for(j=i-1;j>0;--j){
-					gameboard[(row-j)][(column+j)]=color;
+//					gameboard[(row-j)][(column+j)]=color;
 					board[color]|=shift((row-j),(column+j));
 					board[opponent_color]&=~shift((row-j),(column+j));
 				}
@@ -108,7 +107,7 @@ int check_legal_flip(int row, int column, int color, int flip, unsigned long lon
 				if(flip==0)
 					return legal;
 				for(j=i-1;j>0;--j){
-					gameboard[(row+j)][(column-j)]=color;
+//					gameboard[(row+j)][(column-j)]=color;
 					board[color]|=shift((row+j),(column-j));
 					board[opponent_color]&=~shift((row+j),(column-j));
 				}
@@ -123,7 +122,7 @@ int check_legal_flip(int row, int column, int color, int flip, unsigned long lon
 				if(flip==0)
 					return legal;
 				for(j=i-1;j>0;--j){
-					gameboard[(row-j)][(column-j)]=color;
+//					gameboard[(row-j)][(column-j)]=color;
 					board[color]|=shift((row-j),(column-j));
 					board[opponent_color]&=~shift((row-j),(column-j));
 				}
@@ -138,7 +137,7 @@ int check_legal_flip(int row, int column, int color, int flip, unsigned long lon
 				if(flip==0)
 					return legal;
 				for(j=i-1;j>0;--j){
-					gameboard[(row+j)][(column+j)]=color;
+//					gameboard[(row+j)][(column+j)]=color;
 					board[color]|=shift((row+j),(column+j));
 					board[opponent_color]&=~shift((row+j),(column+j));
 				}
@@ -146,7 +145,7 @@ int check_legal_flip(int row, int column, int color, int flip, unsigned long lon
 			break;
 		}
 	if(legal && flip){
-		gameboard[row][column]=color;
+//		gameboard[row][column]=color;
 		board[color]|=shift(row,column);
 		if(color==1){
 			*my_board=board[1];
