@@ -5,14 +5,37 @@
 #include <stdlib.h>
 
 int gameboard[9][9];	//use gameboard[1][1]~gameboard[8][8]
+int hash[65536];
 int move;
-
-void init()
+unsigned long long int board[3];
+unsigned int hash_function(unsigned long long int board)
 {
-	memset(gameboard,0,sizeof(gameboard));
-	gameboard[4][4]=gameboard[5][5]=2;
-	gameboard[4][5]=gameboard[5][4]=1;
-	move=0;
+	board=(board>>32)^(board&0xffffffff);
+	board=(board>>16)^(board&0xffff);
+	return (unsigned int)board;
+}
+void init_hash_table()
+{
+	unsigned int index;
+	index=hash_function(0x0000001008000000+0x0000000810000000);	//white+black
+	hash[index]=(3<<4)+4;
+	index=hash_function(0x0000000008000000+0x0000101810000000);
+	hash[index]=(5<<4)+3;
+	index=hash_function(0x0000000008000000+0x0000003810000000);
+	hash[index]=(3<<4)+5;
+	index=hash_function(0x0000001000000000+0x0000000818080000);
+	hash[index]=(4<<4)+6;
+	index=hash_function(0x0000001000000000+0x000000081c000000);
+	hash[index]=(6<<4)+6;
+/*
+	index=hash_function(
+	hash[index]=
+
+	index=hash_function(0x0000000038000000+0x0000101800000000);
+	hash[index]=6<<4+5;
+	index=hash_function(0x0000000030000000+0x0000101808080000);
+	hash[index]=2<<4+4;
+*/
 }
 int count_color(int color)
 {
@@ -41,6 +64,7 @@ int check_legal(int row, int column, int color)
 	int legal=0;
 	int opponent_color;
 	int i,j;
+	unsigned long long int temp=1;
 	if(color==1)
 		opponent_color=2;
 	else
@@ -53,8 +77,11 @@ int check_legal(int row, int column, int color)
 		if(gameboard[i][column]!=opponent_color)
 			if(gameboard[i][column]==color && i!=(row-1)){
 				legal=1;
-				for(j=i+1;j<row;++j)
+				for(j=i+1;j<row;++j){
 					gameboard[j][column]=color;
+					board[color]|=temp<<(((8-j)<<3)+(8-column));
+					board[opponent_color]&=~(temp<<(((8-j)<<3)+(8-column)));
+				}
 			}else
 				break;
 	/*check down*/
@@ -62,8 +89,11 @@ int check_legal(int row, int column, int color)
 		if(gameboard[i][column]!=opponent_color)
 			if(gameboard[i][column]==color && i!=(row+1)){
 				legal=1;
-				for(j=i-1;j>row;--j)
+				for(j=i-1;j>row;--j){
 					gameboard[j][column]=color;
+					board[color]|=temp<<(((8-j)<<3)+(8-column));
+					board[opponent_color]&=~(temp<<(((8-j)<<3)+(8-column)));
+				}
 			}else
 				break;
 	/*check right*/
@@ -71,8 +101,11 @@ int check_legal(int row, int column, int color)
 		if(gameboard[row][i]!=opponent_color)
 			if(gameboard[row][i]==color && i!=(column+1)){
 				legal=1;
-				for(j=i-1;j>column;--j)
+				for(j=i-1;j>column;--j){
 					gameboard[row][j]=color;
+					board[color]|=temp<<(((8-row)<<3)+(8-j));
+					board[opponent_color]&=~(temp<<(((8-row)<<3)+(8-j)));
+				}
 			}else
 				break;
 	/*check left*/
@@ -80,8 +113,11 @@ int check_legal(int row, int column, int color)
 		if(gameboard[row][i]!=opponent_color)
 			if(gameboard[row][i]==color && i!=(column-1)){
 				legal=1;
-				for(j=i+1;j<column;++j)
+				for(j=i+1;j<column;++j){
 					gameboard[row][j]=color;
+					board[color]|=temp<<(((8-row)<<3)+(8-j));
+					board[opponent_color]&=~(temp<<(((8-row)<<3)+(8-j)));
+				}
 			}else
 				break;
 	/*check upper right*/
@@ -89,8 +125,11 @@ int check_legal(int row, int column, int color)
 		if(gameboard[row-i][column+i]!=opponent_color)
 			if(gameboard[row-i][column+i]==color && i!=1){
 				legal=1;
-				for(j=i-1;j>0;--j)
+				for(j=i-1;j>0;--j){
 					gameboard[row-j][column+j]=color;
+					board[color]|=temp<<(((8-(row-j))<<3)+(8-(column+j)));
+					board[opponent_color]&=~(temp<<(((8-(row-j))<<3)+(8-(column+j))));
+				}
 			}else
 				break;
 	/*check bottom left*/
@@ -98,8 +137,11 @@ int check_legal(int row, int column, int color)
 		if(gameboard[row+i][column-i]!=opponent_color)
 			if(gameboard[row+i][column-i]==color && i!=1){
 				legal=1;
-				for(j=i-1;j>0;--j)
+				for(j=i-1;j>0;--j){
 					gameboard[row+j][column-j]=color;
+					board[color]|=temp<<(((8-(row+j))<<3)+(8-(column-j)));
+					board[opponent_color]&=~(temp<<(((8-(row+j))<<3)+(8-(column-j))));
+				}
 			}else
 				break;
 	/*check upper left*/
@@ -107,8 +149,11 @@ int check_legal(int row, int column, int color)
 		if(gameboard[row-i][column-i]!=opponent_color)
 			if(gameboard[row-i][column-i]==color && i!=1){
 				legal=1;
-				for(j=i-1;j>0;--j)
+				for(j=i-1;j>0;--j){
 					gameboard[row-j][column-j]=color;
+					board[color]|=temp<<(((8-(row-j))<<3)+(8-(column-j)));
+					board[opponent_color]&=~(temp<<(((8-(row-j))<<3)+(8-(column-j))));
+				}
 			}else
 				break;
 	/*chech bottom right*/
@@ -116,26 +161,46 @@ int check_legal(int row, int column, int color)
 		if(gameboard[row+i][column+i]!=opponent_color)
 			if(gameboard[row+i][column+i]==color && i!=1){
 				legal=1;
-				for(j=i-1;j>0;--j)
+				for(j=i-1;j>0;--j){
 					gameboard[row+j][column+j]=color;
+					board[color]|=temp<<(((8-(row+j))<<3)+(8-(column+j)));
+					board[opponent_color]&=~(temp<<(((8-(row+j))<<3)+(8-(column+j))));
+				}
 			}else
 				break;
-	if(legal)
+	if(legal){
 		gameboard[row][column]=color;
+		board[color]|=temp<<(((8-row)<<3)+(8-column));
+	}
 	return legal;
+}
+void init()
+{
+	memset(gameboard,0,sizeof(gameboard));
+	memset(hash,0,sizeof(hash));
+	gameboard[4][4]=gameboard[5][5]=2;
+	gameboard[4][5]=gameboard[5][4]=1;
+	board[1]=0x0000001008000000;
+	board[2]=0x0000000810000000;
+	init_hash_table();
+	move=0;
 }
 int game(int turn)
 {
 	int player1_color,computer_color;
 	int row,column;
+	unsigned int index;
 	init();
 	if(turn==0){	//player1 first
-		player1_color=2;
-		computer_color=1;
-	}else{
 		player1_color=1;
 		computer_color=2;
+	}else{
+		player1_color=2;
+		computer_color=1;
 	}
+	system("clear");
+	show_gameboard();
+	printf("next move: color 1\n");
 	while((move++)<64){
 		if(turn==0){
 			while(scanf("%d %d",&row,&column)){
@@ -150,18 +215,28 @@ int game(int turn)
 			}
 			turn=1;
 		}else if(turn==1){
-			for(row=1;row<=8;++row)
-				for(column=1;column<=8;++column)
-					if(check_legal(row,column,computer_color)){
-						show_gameboard();
-						printf("computer: %d %d\n",row,column);
-						printf("next move: color %d\n",player1_color);
-						row=100;
-						break;
-					}
-			if(row==9){
-				printf("no legal move, pass\n");
-				move--;
+			if(move<=2){
+				index=hash_function(board[1]+board[2]);
+				row=hash[index]>>4;
+				column=hash[index]&7;
+				check_legal(row,column,computer_color);
+				show_gameboard();
+				printf("computer: %d %d\n",row,column);
+				printf("next move: color %d\n",player1_color);
+			}else{
+				for(row=1;row<=8;++row)
+					for(column=1;column<=8;++column)
+						if(check_legal(row,column,computer_color)){
+							show_gameboard();
+							printf("computer: %d %d\n",row,column);
+							printf("next move: color %d\n",player1_color);
+							row=100;
+							break;
+						}
+				if(row==9){
+					printf("no legal move, pass\n");
+					move--;
+				}
 			}
 			turn=0;
 		}
