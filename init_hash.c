@@ -1,5 +1,7 @@
-extern unsigned int hash_function(unsigned long long int board);
+unsigned int hash_function(unsigned long long int board);
+
 extern unsigned long long int board[3];
+extern int hash[65536];
 
 void init_hash_table()
 {

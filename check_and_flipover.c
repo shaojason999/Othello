@@ -1,118 +1,161 @@
-extern int gameboard[9][9];    //use gameboard[1][1]~gameboard[8][8]
-extern unsigned long long int board[3];
+#include <stdio.h>
 
-int check_legal(int row, int column, int color)
+extern int gameboard[9][9];    //use gameboard[1][1]~gameboard[8][8]
+unsigned long long shift(int i, int j)
+{
+	unsigned long long temp=1;
+	return temp<<(((8-i)<<3)+(8-j));
+}
+int check_legal_flip(int row, int column, int color, int flip, unsigned long long *my_board, unsigned long long *opponent_board)
 {
 	int legal=0;
 	int opponent_color;
 	int i,j;
 	unsigned long long int temp=1;
+	unsigned long long board[3];
 	if(color==1)
 		opponent_color=2;
 	else
 		opponent_color=1;
+	board[color]=*my_board;
+	board[opponent_color]=*opponent_board;
 	/*check empty*/
-	if(gameboard[row][column]!=0)
+//	if(gameboard[row][column]!=0)
+//		return legal;
+	if((board[1]&shift(row,column))!=0 || (board[2]&shift(row,column))!=0)
 		return legal;
 	/*check up*/
 	for(i=row-1;i>0;--i)
-		if(gameboard[i][column]!=opponent_color)
-			if(gameboard[i][column]==color && i!=(row-1)){
+		if((board[opponent_color]&shift(i,column))==0){
+			if((board[color]&shift(i,column))!=0 && i!=row-1){
 				legal=1;
+				if(flip==0)
+					return legal;
 				for(j=i+1;j<row;++j){
 					gameboard[j][column]=color;
-					board[color]|=temp<<(((8-j)<<3)+(8-column));
-					board[opponent_color]&=~(temp<<(((8-j)<<3)+(8-column)));
+					board[color]|=shift(j,column);
+					board[opponent_color]&=~shift(j,column);
 				}
-			}else
-				break;
+			}
+			break;
+		}
 	/*check down*/
 	for(i=row+1;i<=8;++i)
-		if(gameboard[i][column]!=opponent_color)
-			if(gameboard[i][column]==color && i!=(row+1)){
+		if((board[opponent_color]&shift(i,column))==0){
+			if((board[color]&shift(i,column))!=0 && i!=row+1){
 				legal=1;
+				if(flip==0)
+					return legal;
+				printf("%d %d %d\n",j=i-1,column,color);
 				for(j=i-1;j>row;--j){
 					gameboard[j][column]=color;
-					board[color]|=temp<<(((8-j)<<3)+(8-column));
-					board[opponent_color]&=~(temp<<(((8-j)<<3)+(8-column)));
+					board[color]|=shift(j,column);
+					board[opponent_color]&=~shift(j,column);
 				}
-			}else
-				break;
+			}
+			break;
+		}
 	/*check right*/
 	for(i=column+1;i<=8;++i)
-		if(gameboard[row][i]!=opponent_color)
-			if(gameboard[row][i]==color && i!=(column+1)){
+		if((board[opponent_color]&shift(row,i))==0){
+			if((board[color]&shift(row,i))!=0 && i!=column+1){
 				legal=1;
+				if(flip==0)
+					return legal;
 				for(j=i-1;j>column;--j){
 					gameboard[row][j]=color;
-					board[color]|=temp<<(((8-row)<<3)+(8-j));
-					board[opponent_color]&=~(temp<<(((8-row)<<3)+(8-j)));
+					board[color]|=shift(row,j);
+					board[opponent_color]&=~shift(row,j);
 				}
-			}else
-				break;
+			}
+			break;
+		}
 	/*check left*/
 	for(i=column-1;i>0;--i)
-		if(gameboard[row][i]!=opponent_color)
-			if(gameboard[row][i]==color && i!=(column-1)){
+		if((board[opponent_color]&shift(row,i))==0){
+			if((board[color]&shift(row,i))!=0 && i!=column-1){
 				legal=1;
+				if(flip==0)
+					return legal;
 				for(j=i+1;j<column;++j){
 					gameboard[row][j]=color;
-					board[color]|=temp<<(((8-row)<<3)+(8-j));
-					board[opponent_color]&=~(temp<<(((8-row)<<3)+(8-j)));
+					board[color]|=shift(row,j);
+					board[opponent_color]&=~shift(row,j);
 				}
-			}else
-				break;
+			}
+			break;
+		}
 	/*check upper right*/
 	for(i=1;(row-i)>0 && (column+i)<=8;++i)
-		if(gameboard[row-i][column+i]!=opponent_color)
-			if(gameboard[row-i][column+i]==color && i!=1){
+		if((board[opponent_color]&shift((row-i),(column+i)))==0){
+			if((board[color]&shift((row-i),(column+i)))!=0 && i!=1){
 				legal=1;
+				if(flip==0)
+					return legal;
 				for(j=i-1;j>0;--j){
-					gameboard[row-j][column+j]=color;
-					board[color]|=temp<<(((8-(row-j))<<3)+(8-(column+j)));
-					board[opponent_color]&=~(temp<<(((8-(row-j))<<3)+(8-(column+j))));
+					gameboard[(row-j)][(column+j)]=color;
+					board[color]|=shift((row-j),(column+j));
+					board[opponent_color]&=~shift((row-j),(column+j));
 				}
-			}else
-				break;
+			}
+			break;
+		}
 	/*check bottom left*/
 	for(i=1;(row+i)<=8 && (column-i)>0;++i)
-		if(gameboard[row+i][column-i]!=opponent_color)
-			if(gameboard[row+i][column-i]==color && i!=1){
+		if((board[opponent_color]&shift((row+i),(column-i)))==0){
+			if((board[color]&shift((row+i),(column-i)))!=0 && i!=1){
 				legal=1;
+				if(flip==0)
+					return legal;
 				for(j=i-1;j>0;--j){
-					gameboard[row+j][column-j]=color;
-					board[color]|=temp<<(((8-(row+j))<<3)+(8-(column-j)));
-					board[opponent_color]&=~(temp<<(((8-(row+j))<<3)+(8-(column-j))));
+					gameboard[(row+j)][(column-j)]=color;
+					board[color]|=shift((row+j),(column-j));
+					board[opponent_color]&=~shift((row+j),(column-j));
 				}
-			}else
-				break;
+			}
+			break;
+		}
 	/*check upper left*/
 	for(i=1;(row-i)>0 && (column-i)>0;++i)
-		if(gameboard[row-i][column-i]!=opponent_color)
-			if(gameboard[row-i][column-i]==color && i!=1){
+		if((board[opponent_color]&shift((row-i),(column-i)))==0){
+			if((board[color]&shift((row-i),(column-i)))!=0 && i!=1){
 				legal=1;
+				if(flip==0)
+					return legal;
 				for(j=i-1;j>0;--j){
-					gameboard[row-j][column-j]=color;
-					board[color]|=temp<<(((8-(row-j))<<3)+(8-(column-j)));
-					board[opponent_color]&=~(temp<<(((8-(row-j))<<3)+(8-(column-j))));
+					gameboard[(row-j)][(column-j)]=color;
+					board[color]|=shift((row-j),(column-j));
+					board[opponent_color]&=~shift((row-j),(column-j));
 				}
-			}else
-				break;
+			}
+			break;
+		}
 	/*chech bottom right*/
 	for(i=1;(row+i)<=8 && (column+i)<=8;++i)
-		if(gameboard[row+i][column+i]!=opponent_color)
-			if(gameboard[row+i][column+i]==color && i!=1){
+		if((board[opponent_color]&shift((row+i),(column+i)))==0){
+			if((board[color]&shift((row+i),(column+i)))!=0 && i!=1){
 				legal=1;
+				if(flip==0)
+					return legal;
 				for(j=i-1;j>0;--j){
-					gameboard[row+j][column+j]=color;
-					board[color]|=temp<<(((8-(row+j))<<3)+(8-(column+j)));
-					board[opponent_color]&=~(temp<<(((8-(row+j))<<3)+(8-(column+j))));
+					gameboard[(row+j)][(column+j)]=color;
+					board[color]|=shift((row+j),(column+j));
+					board[opponent_color]&=~shift((row+j),(column+j));
 				}
-			}else
-				break;
-	if(legal){
+			}
+			break;
+		}
+	if(legal && flip){
 		gameboard[row][column]=color;
-		board[color]|=temp<<(((8-row)<<3)+(8-column));
+		board[color]|=shift(row,column);
+		if(color==1){
+			*my_board=board[1];
+			*opponent_board=board[2];
+		}
+		else{
+			*my_board=board[2];
+			*opponent_board=board[1];
+		}
 	}
 	return legal;
 }
