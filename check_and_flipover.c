@@ -29,7 +29,6 @@ int check_legal_flip(int row, int column, int color, int flip, unsigned long lon
 		if((board[opponent_color]&shift(i,column))==0){
 	//	printf("%llx\n",board[color]);
 			if((board[color]&shift(i,column))!=0 && i!=row-1){
-	//	printf("345\n");
 				legal=1;
 				if(flip==0)
 					return legal;

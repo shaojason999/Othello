@@ -236,7 +236,9 @@ int game(int turn)
 				max_move=-1;
 				for(i=0;i<64;++i){
 					if((true_board[computer_color]&check)==0 && (true_board[player_color]&check)==0){
+					printf("%d\n",i);
 						if(check_legal_flip(i/8+1,i%8+1,computer_color,1,&temp_board[computer_color],&temp_board[player_color])){	//check and flip
+					printf("%d\n",i);
 							pass=0;
 							++depth;
 							t=-alpha_beta(-beta,-m,player_color,temp_board[player_color],temp_board[computer_color]);
