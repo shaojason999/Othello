@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define DEPTH 10
+#define DEPTH 8
 
 //int gameboard[9][9];	//use gameboard[1][1]~gameboard[8][8]
 int hash[65536];
@@ -73,8 +73,31 @@ int alpha_beta(int alpha, int beta, int my_color, unsigned long long my_board, u
 		opponent_color=2;
 	else
 		opponent_color=1;
-	if(depth==DEPTH){
+	if(depth==DEPTH || depth+move==64){
 		int value=0;
+				/*show the current disc*/
+/*				check<<=63;
+				printf("moves:\n");
+				for(i=0;i<64;++i){
+					if(i%8==0)
+						printf("%d| ",i/8+1);
+					if((my_board&check)!=0)
+						if(my_color==1)
+							printf("1 ");
+						else
+							printf("2 ");
+					else if((opponent_board&check)!=0)
+						if(my_color==1)
+							printf("2 ");
+						else
+							printf("1 ");
+					else
+						printf("0 ");
+					if(i%8==7)
+						printf("\n");
+					check>>=1;
+				}
+				check=1;*/
 		for(i=0;i<64;++i){
 			value+=((int)(my_board&check)-(int)(opponent_board&check))*weight[63-i];
 			my_board>>=1;
@@ -121,9 +144,9 @@ int game(int turn)
 {
 	int player_color,computer_color;
 	int row,column;
-	int depth;
 	unsigned int index;
 	int i,alpha,beta,m,max_move,t;
+	int pass=0;
 	init();
 	if(turn==0){	//player1 first
 		player_color=2;
@@ -136,8 +159,24 @@ int game(int turn)
 	show_gameboard();
 	printf("next move: color 2\n");
 	while((move++)<64){
+		if(pass==2)
+			break;
 		if(turn==0){
+			turn=1;
+			for(row=1;row<=8;++row)
+				for(column=1;column<=8;++column)
+					if(check_legal_flip(row,column,player_color,0,&true_board[player_color],&true_board[computer_color])){
+						row=100;
+						break;
+					}
+			if(row==9){
+				printf("no legal move, pass\n");
+				++pass;
+				--move;
+				continue;
+			}
 			while(scanf("%d %d",&row,&column)){
+				pass=0;
 				if(row>8 || column>8){
 					printf("illegal move, try again\n");
 					continue;
@@ -151,8 +190,8 @@ int game(int turn)
 				}else
 					printf("illegal move, try again\n");
 			}
-			turn=1;
 		}else if(turn==1){
+			turn=0;
 			if(move<=2){	//opening book
 				index=hash_function(true_board[1]+true_board[2]);
 				row=hash[index]>>4;
@@ -176,6 +215,7 @@ int game(int turn)
 				for(i=0;i<64;++i){
 					if((true_board[computer_color]&check)==0 && (true_board[player_color]&check)==0)
 						if(check_legal_flip(i/8+1,i%8+1,computer_color,1,&temp_board[computer_color],&temp_board[player_color])){	//check and flip
+							pass=0;
 							++depth;
 							t=-alpha_beta(-beta,-m,player_color,temp_board[player_color],temp_board[computer_color]);
 							--depth;
@@ -189,7 +229,9 @@ int game(int turn)
 				}
 				if(max_move==-1){
 					printf("no legal move, pass\n");
-					move--;
+					++pass;
+					--move;
+					continue;
 				}
 				else{
 					row=max_move/8+1;
@@ -213,7 +255,6 @@ int game(int turn)
 					move--;
 				}
 */			}
-			turn=0;
 		}
 	}
 	int color1,color2;
