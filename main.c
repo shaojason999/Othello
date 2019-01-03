@@ -4,12 +4,21 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define DEPTH 4
+#define DEPTH 10
 
 //int gameboard[9][9];	//use gameboard[1][1]~gameboard[8][8]
 int hash[65536];
 int move;
+int depth;
 unsigned long long int true_board[3];
+const int weight[64]={120,-20, 20,  5,  5, 20,-20,120,
+		      -20,-40, -5, -5, -5, -5,-40,-20,
+		       20, -5, 15,  3,  3, 15, -5, 20,
+		        5, -5,  3,  3,  3,  3, -5,  5,
+		        5, -5,  3,  3,  3,  3, -5,  5,
+		       20, -5, 15,  3,  3, 15, -5, 20,
+		      -20,-40, -5, -5, -5, -5,-40,-20,
+		      120,-20, 20,  5,  5, 20,-20,120};
 
 int check_legal_flip(int row, int column, int my_color, int flip, unsigned long long *, unsigned long long *);
 void init_hash_table();
@@ -54,23 +63,32 @@ void show_gameboard()
 		check>>=1;
 	}
 }
-void alpha_beta(int alpha, int beta, int my_color, unsigned long long my_board, unsigned long long opponent_board)	//row and column is from 1 to 8
+int alpha_beta(int alpha, int beta, int my_color, unsigned long long my_board, unsigned long long opponent_board)	//row and column is from 1 to 8
 {
 	unsigned long long check=1;
 	unsigned long long temp_board[3];
 	int opponent_color;
-	check<<=63;
-	/*init set*/
+	int i,t,m;
 	if(my_color==1)
 		opponent_color=2;
 	else
 		opponent_color=1;
+	if(depth==DEPTH){
+		int value=0;
+		for(i=0;i<64;++i){
+			value+=((int)(my_board&check)-(int)(opponent_board&check))*weight[63-i];
+			my_board>>=1;
+			opponent_board>>=1;
+		}
+//		printf("%d\n",value);
+		return value;
+	}
+	check<<=63;
 	temp_board[my_color]=my_board;
 	temp_board[opponent_color]=opponent_board;
-
 	if(depth<DEPTH){
 		m=alpha;
-		for(i=0;i<64;++i)
+		for(i=0;i<64;++i){
 			if((my_board&check)==0 && (opponent_board&check)==0)
 				if(check_legal_flip(i/8+1,i%8+1,my_color,1,&temp_board[my_color],&temp_board[opponent_color])){	//check and flip
 					++depth;
@@ -79,17 +97,14 @@ void alpha_beta(int alpha, int beta, int my_color, unsigned long long my_board, 
 					if(t>m)
 						m=t;
 					if(m>=beta)
-						return m;
+						return m;	//cut-off
 					temp_board[my_color]=my_board;
 					temp_board[opponent_color]=opponent_board;
 				}
-
-//		if(i==64){
-//			printf("no legal move, pass\n");
-//			return;
+			check>>=1;
 		}
+		return m;	
 	}
-
 }
 void init()
 {
@@ -106,7 +121,9 @@ int game(int turn)
 {
 	int player_color,computer_color;
 	int row,column;
+	int depth;
 	unsigned int index;
+	int i,alpha,beta,m,max_move,t;
 	init();
 	if(turn==0){	//player1 first
 		player_color=2;
@@ -145,8 +162,43 @@ int game(int turn)
 				printf("computer: %d %d\t(%d %d)\n",row,column,row-1,column-1);
 				printf("next move: color %d\n",player_color);
 			}else{
-				alpha_beta(computer_color);
-
+				unsigned long long check=1;
+				unsigned long long temp_board[3];
+				/*init set*/
+				check<<=63;
+				temp_board[computer_color]=true_board[computer_color];
+				temp_board[player_color]=true_board[player_color];
+				depth=0;
+				alpha=-100000;
+				beta=100000;
+				m=alpha;
+				max_move=-1;
+				for(i=0;i<64;++i){
+					if((true_board[computer_color]&check)==0 && (true_board[player_color]&check)==0)
+						if(check_legal_flip(i/8+1,i%8+1,computer_color,1,&temp_board[computer_color],&temp_board[player_color])){	//check and flip
+							++depth;
+							t=-alpha_beta(-beta,-m,player_color,temp_board[player_color],temp_board[computer_color]);
+							--depth;
+							if(t>m){
+								m=t;
+								max_move=i;
+							}
+							temp_board[computer_color]=true_board[computer_color];
+							temp_board[player_color]=true_board[player_color];
+						}
+				}
+				if(max_move==-1){
+					printf("no legal move, pass\n");
+					move--;
+				}
+				else{
+					row=max_move/8+1;
+					column=max_move%8+1;
+					check_legal_flip(row,column,computer_color,1,&true_board[computer_color],&true_board[player_color]);	//real move
+					show_gameboard();
+					printf("computer: %d %d\t(%d %d)\n",row,column,row-1,column-1);
+					printf("next move: color %d\n",player_color);
+				}
 /*				for(row=1;row<=8;++row)
 					for(column=1;column<=8;++column)
 						if(check_legal_flip(row,column,computer_color,1,&true_board[computer_color],&true_board[player_color])){
@@ -164,12 +216,12 @@ int game(int turn)
 			turn=0;
 		}
 	}
-	int i,j;	//temporarily used for count color
-	i=count_color(player_color);
-	j=count_color(computer_color);
-	if(i>j)
+	int color1,color2;
+	color1=count_color(player_color);
+	color2=count_color(computer_color);
+	if(color1>color2)
 		printf("player1 win\n");
-	else if(i<j)
+	else if(color2>color1)
 		printf("computer win\n");
 	else
 		printf("draw\n");
