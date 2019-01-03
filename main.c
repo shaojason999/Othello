@@ -4,9 +4,10 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define DEPTH 8
+//#define DEPTH 8
+//#define PERFECT 11	//perfect search depth
 
-//int gameboard[9][9];	//use gameboard[1][1]~gameboard[8][8]
+int DEPTH;
 int hash[65536];
 int move;
 int depth;
@@ -69,12 +70,20 @@ int alpha_beta(int alpha, int beta, int my_color, unsigned long long my_board, u
 	unsigned long long temp_board[3];
 	int opponent_color;
 	int i,t,m;
+	int row,column;
+	int my_count,opponent_count;
 	if(my_color==1)
 		opponent_color=2;
 	else
 		opponent_color=1;
-	if(depth==DEPTH || depth+move==64){
-		int value=0;
+	temp_board[my_color]=my_board;
+	temp_board[opponent_color]=opponent_board;
+	if(DEPTH+move==64){	//perfect_search
+		my_count=count_color(my_color);
+		opponent_count=count_color(opponent_color);
+		return my_count-opponent_count;
+	}
+	if(depth==DEPTH){
 				/*show the current disc*/
 /*				check<<=63;
 				printf("moves:\n");
@@ -98,17 +107,28 @@ int alpha_beta(int alpha, int beta, int my_color, unsigned long long my_board, u
 					check>>=1;
 				}
 				check=1;*/
+		int value=0;
+		int mobility=0;
+		/*weight*/
 		for(i=0;i<64;++i){
 			value+=((int)(my_board&check)-(int)(opponent_board&check))*weight[63-i];
 			my_board>>=1;
 			opponent_board>>=1;
 		}
-//		printf("%d\n",value);
-		return value;
+		/*mobility*/
+		for(row=1;row<=8;++row)
+			for(column=1;column<=8;++column){
+				if(check_legal_flip(row,column,my_color,0,&temp_board[my_color],&temp_board[opponent_color])){
+				//if(check_legal_flip(row,column,my_color,0,&my_board,&opponent_board)){
+					++mobility;
+				}
+			}
+//		printf("value: %d mobility: %d\n",value,mobility);
+		/*modify the calculate formula parameter here*/
+		return value+mobility*10;
 	}
+	check=1;
 	check<<=63;
-	temp_board[my_color]=my_board;
-	temp_board[opponent_color]=opponent_board;
 	if(depth<DEPTH){
 		m=alpha;
 		for(i=0;i<64;++i){
@@ -119,8 +139,9 @@ int alpha_beta(int alpha, int beta, int my_color, unsigned long long my_board, u
 					--depth;
 					if(t>m)
 						m=t;
-					if(m>=beta)
+					if(m>=beta){
 						return m;	//cut-off
+					}
 					temp_board[my_color]=my_board;
 					temp_board[opponent_color]=opponent_board;
 				}
@@ -145,6 +166,8 @@ int game(int turn)
 	int player_color,computer_color;
 	int row,column;
 	unsigned int index;
+	unsigned long long check=1;
+	unsigned long long temp_board[3];
 	int i,alpha,beta,m,max_move,t;
 	int pass=0;
 	init();
@@ -201,9 +224,8 @@ int game(int turn)
 				printf("computer: %d %d\t(%d %d)\n",row,column,row-1,column-1);
 				printf("next move: color %d\n",player_color);
 			}else{
-				unsigned long long check=1;
-				unsigned long long temp_board[3];
 				/*init set*/
+				check=1;
 				check<<=63;
 				temp_board[computer_color]=true_board[computer_color];
 				temp_board[player_color]=true_board[player_color];
@@ -213,7 +235,7 @@ int game(int turn)
 				m=alpha;
 				max_move=-1;
 				for(i=0;i<64;++i){
-					if((true_board[computer_color]&check)==0 && (true_board[player_color]&check)==0)
+					if((true_board[computer_color]&check)==0 && (true_board[player_color]&check)==0){
 						if(check_legal_flip(i/8+1,i%8+1,computer_color,1,&temp_board[computer_color],&temp_board[player_color])){	//check and flip
 							pass=0;
 							++depth;
@@ -221,11 +243,13 @@ int game(int turn)
 							--depth;
 							if(t>m){
 								m=t;
-								max_move=i;
+								max_move=i;	//if DEPTH=0, next move is the first legal move(i)
 							}
 							temp_board[computer_color]=true_board[computer_color];
 							temp_board[player_color]=true_board[player_color];
 						}
+					}
+					check>>=1;
 				}
 				if(max_move==-1){
 					printf("no legal move, pass\n");
@@ -261,28 +285,22 @@ int game(int turn)
 	color1=count_color(player_color);
 	color2=count_color(computer_color);
 	if(color1>color2)
-		printf("player1 win\n");
+		printf("player1 win: %d:%d\n",color1,color2);
 	else if(color2>color1)
-		printf("computer win\n");
+		printf("computer win: %d:%d\n",color2,color1);
 	else
 		printf("draw\n");
 }
 int main()
 {
 	int player,turn;
-	printf("1 player or 2 player: ");
-	scanf("%d",&player);
-	if(player==1){
-		printf("0: You first, 1: Computer first: ");
-		scanf("%d",&turn);
-		if(turn==0)
-			game(0);
-		else
-			game(1);
-
-	}
-	else if(player==2){
-			
-	}
+	printf("Search depth: ");
+	scanf("%d",&DEPTH);
+	printf("0: You first, 1: Computer first: ");
+	scanf("%d",&turn);
+	if(turn==0)
+		game(0);
+	else
+		game(1);
 
 }

@@ -23,11 +23,13 @@ int check_legal_flip(int row, int column, int color, int flip, unsigned long lon
 //	if(gameboard[row][column]!=0)
 //		return legal;
 	if((board[1]&shift(row,column))!=0 || (board[2]&shift(row,column))!=0)
-		return legal;
+		return legal;	//return 0;
 	/*check up*/
 	for(i=row-1;i>0;--i)
 		if((board[opponent_color]&shift(i,column))==0){
+	//	printf("%llx\n",board[color]);
 			if((board[color]&shift(i,column))!=0 && i!=row-1){
+	//	printf("345\n");
 				legal=1;
 				if(flip==0)
 					return legal;
@@ -144,17 +146,11 @@ int check_legal_flip(int row, int column, int color, int flip, unsigned long lon
 			}
 			break;
 		}
-	if(legal && flip){
+	if(legal){
 //		gameboard[row][column]=color;
 		board[color]|=shift(row,column);
-		if(color==1){
-			*my_board=board[1];
-			*opponent_board=board[2];
-		}
-		else{
-			*my_board=board[2];
-			*opponent_board=board[1];
-		}
+		*my_board=board[color];
+		*opponent_board=board[opponent_color];
 	}
 	return legal;
 }
