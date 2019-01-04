@@ -1,6 +1,6 @@
 # Othello
 
-### Version 1 (2019.1.4)
+## Version 1 (2019.1.4)
 1. 開局: 前兩步使用棋譜
     * 用Hash Function
 2. 中局: Negamax, Alpha-Beta, Heuristic
@@ -15,7 +15,14 @@
 2. 我的程式大致上與WZebra走的路差不多，但幾次的誤差，累積幾來就差蠻多的了
 3. 觀察發現WZebra應該也是把行動力看蠻重要的
 
-### 一些技巧(雖然沒有全用在程式裡)
+#### 可改進地方
+1. 比如bit count可以加快速度: [c语言:统计整数二进制表示中1的个数(汉明重量)](https://blog.csdn.net/hitwhylz/article/details/10122617)
+2. 程式整體架構有點亂，因為當初寫得有點急
+3. 參數調整: 把開局中局及終局之間的參數可以分得更細，比如每10步換一個參數
+4. 中局應該用MCTS
+5. 棋譜(book)可以增加
+
+## 一些技巧(雖然沒有全用在程式裡)
 From Wikipedia  
 1. 遊戲的後期是關鍵位置的爭奪，而前期的布局，就是為搶占關鍵位置作準備。比如，若不想讓對方占據棋盤邊緣的有利位置，那麼自己就應避免在靠近邊緣的那一排落子。
 2. C位、星位(不要下)
@@ -35,7 +42,7 @@ Others
 2. 對方行動力少->只能下星位，而你可以下角
 3. 盡量讓自己被包圍->你行動力大
 
-### Reference:
+## Reference:
 1. [玩黑白棋有什么技巧？](https://www.zhihu.com/question/25271618)
 2. [Wikipedia: 黑白棋](https://zh.wikipedia.org/wiki/%E9%BB%91%E7%99%BD%E6%A3%8B)
 2. [weight reference](https://my.vanderbilt.edu/cs260/files/2012/08/Othello.c1.txt)
