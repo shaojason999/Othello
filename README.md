@@ -5,7 +5,10 @@
     * 用Hash Function
 2. 中局: Negamax, Alpha-Beta, Heuristic
       * 審局函數: 棋盤加權與行動力(幾個位置可下)的線性組合
-3. 終局: 最後幾步用Negamax, Alpha-Beta做perfect search(實際的黑棋、白棋數量)
+3. 終局: 最後幾步用Negamax, Alpha-Beta做perfect search(算出實際的黑棋、白棋數量)  
+
+* 可調參數: 審局函數(棋盤權重、行動力)、perfect search 深度
+* 程式開始時可選擇搜尋深度(終局深度是固定的、不能選)，還有選擇誰先下棋(玩家或電腦)
 
 ##### Comment
 1. 把WZebra當對手(3~6層)
