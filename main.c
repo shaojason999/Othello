@@ -78,9 +78,10 @@ int alpha_beta(int alpha, int beta, int my_color, unsigned long long my_board, u
 		opponent_color=1;
 	temp_board[my_color]=my_board;
 	temp_board[opponent_color]=opponent_board;
-	if(DEPTH+move==64){	//perfect_search
+/**/	if(depth+move-1==64){	//perfect search
 		my_count=count_color(my_color);
 		opponent_count=count_color(opponent_color);
+		printf("%d\n",my_count-opponent_count);
 		return my_count-opponent_count;
 	}
 	if(depth==DEPTH){
@@ -119,13 +120,20 @@ int alpha_beta(int alpha, int beta, int my_color, unsigned long long my_board, u
 		for(row=1;row<=8;++row)
 			for(column=1;column<=8;++column){
 				if(check_legal_flip(row,column,my_color,0,&temp_board[my_color],&temp_board[opponent_color])){
-				//if(check_legal_flip(row,column,my_color,0,&my_board,&opponent_board)){
 					++mobility;
+				}
+				if(check_legal_flip(row,column,opponent_color,0,&temp_board[opponent_color],&temp_board[my_color])){
+					--mobility;
 				}
 			}
 //		printf("value: %d mobility: %d\n",value,mobility);
 		/*modify the calculate formula parameter here*/
-		return value+mobility*10;
+		if(depth+move<50)
+			return value+mobility*30;
+		else{
+//			printf("value: %d mobility: %d\n",value,mobility);
+			return value+mobility*25;
+		}
 	}
 	check=1;
 	check<<=63;
@@ -252,8 +260,6 @@ int game(int turn)
 							}
 							temp_board[computer_color]=true_board[computer_color];
 							temp_board[player_color]=true_board[player_color];
-							if(max_move==-1)
-								printf("%d\n",i);
 						}
 					}
 					check>>=1;
