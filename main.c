@@ -5,7 +5,8 @@
 #include <stdlib.h>
 
 //#define DEPTH 8
-//#define PERFECT 11	//perfect search depth
+/*change the perfect search depth here*/
+#define PERFECT_SEARCH 14
 
 int DEPTH;
 int hash[65536];
@@ -14,10 +15,10 @@ int depth;
 unsigned long long int true_board[3];
 const int weight[64]={120,-20, 20,  5,  5, 20,-20,120,
 		      -20,-40, -5, -5, -5, -5,-40,-20,
-		       20, -5, 15,  3,  3, 15, -5, 20,
-		        5, -5,  3,  3,  3,  3, -5,  5,
-		        5, -5,  3,  3,  3,  3, -5,  5,
-		       20, -5, 15,  3,  3, 15, -5, 20,
+		       15, -5, 15,  3,  3, 15, -5, 15,
+		        5, -5,  3, 20, 20,  3, -5,  5,
+		        5, -5,  3, 20, 20,  3, -5,  5,
+		       15, -5, 15,  3,  3, 15, -5, 15,
 		      -20,-40, -5, -5, -5, -5,-40,-20,
 		      120,-20, 20,  5,  5, 20,-20,120};
 
@@ -30,14 +31,14 @@ unsigned int hash_function(unsigned long long int board)
 	board=(board>>16)^(board&0xffff);
 	return (unsigned int)board;
 }
-int count_color(int color)
+int count_color(unsigned long long board)
 {
 	int i;
 	int count=0;
 	unsigned long long check=1;
 	check<<=63;
 	for(i=0;i<64;++i){
-		if((true_board[color]&check)!=0)
+		if((board&check)!=0)
 			++count;
 		check>>=1;
 	}
@@ -78,36 +79,12 @@ int alpha_beta(int alpha, int beta, int my_color, unsigned long long my_board, u
 		opponent_color=1;
 	temp_board[my_color]=my_board;
 	temp_board[opponent_color]=opponent_board;
-/**/	if(depth+move-1==64){	//perfect search
-		my_count=count_color(my_color);
-		opponent_count=count_color(opponent_color);
-		printf("%d\n",my_count-opponent_count);
+	if(depth+move-1==64){	//perfect search
+		my_count=count_color(my_board);
+		opponent_count=count_color(opponent_board);
 		return my_count-opponent_count;
 	}
 	if(depth==DEPTH){
-				/*show the current disc*/
-/*				check<<=63;
-				printf("moves:\n");
-				for(i=0;i<64;++i){
-					if(i%8==0)
-						printf("%d| ",i/8+1);
-					if((my_board&check)!=0)
-						if(my_color==1)
-							printf("1 ");
-						else
-							printf("2 ");
-					else if((opponent_board&check)!=0)
-						if(my_color==1)
-							printf("2 ");
-						else
-							printf("1 ");
-					else
-						printf("0 ");
-					if(i%8==7)
-						printf("\n");
-					check>>=1;
-				}
-				check=1;*/
 		int value=0;
 		int mobility=0;
 		/*weight*/
@@ -126,13 +103,12 @@ int alpha_beta(int alpha, int beta, int my_color, unsigned long long my_board, u
 					--mobility;
 				}
 			}
-//		printf("value: %d mobility: %d\n",value,mobility);
 		/*modify the calculate formula parameter here*/
+//		printf("%d %d\n",value,mobility);
 		if(depth+move<50)
-			return value+mobility*30;
+			return value+mobility*80;
 		else{
-//			printf("value: %d mobility: %d\n",value,mobility);
-			return value+mobility*25;
+			return value+mobility*120;
 		}
 	}
 	check=1;
@@ -167,7 +143,7 @@ void init()
 	true_board[1]=0x0000001008000000;
 	true_board[2]=0x0000000810000000;
 	init_hash_table();
-	move=0;
+	move=4;
 }
 int game(int turn)
 {
@@ -190,6 +166,9 @@ int game(int turn)
 	show_gameboard();
 	printf("next move: color 2\n");
 	while((move++)<64){
+		/*last 14 perfect search*/
+		if(move==64+1-PERFECT_SEARCH)
+			DEPTH=PERFECT_SEARCH;
 		if(pass==2)
 			break;
 		if(turn==0){
@@ -280,7 +259,7 @@ int game(int turn)
 					}
 					check_legal_flip(row,column,computer_color,1,&true_board[computer_color],&true_board[player_color]);	//real move
 					show_gameboard();
-					printf("computer: %d %d\t(%d %d)\n",row,column,row-1,column-1);
+					printf("computer:%d %d\t(%d %d)\n",row,column,row-1,column-1);
 					printf("next move: color %d\n",player_color);
 				}
 /*				for(row=1;row<=8;++row)
@@ -299,13 +278,13 @@ int game(int turn)
 */			}
 		}
 	}
-	int color1,color2;
-	color1=count_color(player_color);
-	color2=count_color(computer_color);
-	if(color1>color2)
-		printf("player1 win: %d:%d\n",color1,color2);
-	else if(color2>color1)
-		printf("computer win: %d:%d\n",color2,color1);
+	int player_count,computer_count;
+	player_count=count_color(true_board[player_color]);
+	computer_count=count_color(true_board[computer_color]);
+	if(player_count>computer_count)
+		printf("player1 win: %d:%d\n",player_count,computer_count);
+	else if(computer_count>player_count)
+		printf("computer win: %d:%d\n",computer_count,player_count);
 	else
 		printf("draw\n");
 }
