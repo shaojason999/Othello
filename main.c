@@ -168,8 +168,8 @@ int game(int turn)
 	unsigned int index;
 	unsigned long long check=1;
 	unsigned long long temp_board[3];
-	int i,alpha,beta,m,max_move,t;
-	int pass=0;
+	int i,alpha,beta,m,max_move,legal_move,t;
+	int pass=0,flag;
 	init();
 	if(turn==0){	//player1 first
 		player_color=2;
@@ -234,34 +234,44 @@ int game(int turn)
 				beta=100000;
 				m=alpha;
 				max_move=-1;
+				flag=0;
 				for(i=0;i<64;++i){
 					if((true_board[computer_color]&check)==0 && (true_board[player_color]&check)==0){
-					printf("%d\n",i);
 						if(check_legal_flip(i/8+1,i%8+1,computer_color,1,&temp_board[computer_color],&temp_board[player_color])){	//check and flip
-					printf("%d\n",i);
 							pass=0;
 							++depth;
 							t=-alpha_beta(-beta,-m,player_color,temp_board[player_color],temp_board[computer_color]);
 							--depth;
+							flag=1;
 							if(t>m){
 								m=t;
 								max_move=i;	//if DEPTH=0, next move is the first legal move(i)
 							}
+							else{
+								legal_move=i;
+							}
 							temp_board[computer_color]=true_board[computer_color];
 							temp_board[player_color]=true_board[player_color];
+							if(max_move==-1)
+								printf("%d\n",i);
 						}
 					}
 					check>>=1;
 				}
-				if(max_move==-1){
+				if(flag==0){
 					printf("no legal move, pass\n");
 					++pass;
 					--move;
 					continue;
 				}
 				else{
-					row=max_move/8+1;
-					column=max_move%8+1;
+					if(max_move!=-1){
+						row=max_move/8+1;
+						column=max_move%8+1;
+					}else{
+						row=legal_move/8+1;
+						column=legal_move%8+1;
+					}
 					check_legal_flip(row,column,computer_color,1,&true_board[computer_color],&true_board[player_color]);	//real move
 					show_gameboard();
 					printf("computer: %d %d\t(%d %d)\n",row,column,row-1,column-1);
