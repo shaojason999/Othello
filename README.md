@@ -7,7 +7,7 @@
       * 審局函數: 棋盤加權與行動力(幾個位置可下)的線性組合
 3. 終局: 最後幾步用Negamax, Alpha-Beta做perfect search(實際的黑棋、白棋數量)
 
-#### Comment
+##### Comment
 1. 把WZebra當對手(3~6層)
 2. 我的程式大致上與WZebra走的路差不多，但幾次的誤差，累積幾來就差蠻多的了
 3. 觀察發現WZebra應該也是把行動力看蠻重要的
