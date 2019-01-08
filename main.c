@@ -5,8 +5,11 @@
 #include <stdlib.h>
 
 //#define DEPTH 8
-/*change the perfect search depth here*/
-#define PERFECT_SEARCH 14
+/*modify the parameter here*/
+#define PERFECT_SEARCH 18	//the last perfect search depth
+#define STAGE_1 depth+move<50	//STAGE_1
+#define FORMULA_1 value+mobility*80	//the heuristic of STAGE_1
+#define FORMULA_2 value+mobility*120	//the heuristic between STAGE_1 and perfect search
 
 int DEPTH;
 int hash[65536];
@@ -14,12 +17,12 @@ int move;
 int depth;
 unsigned long long int true_board[3];
 const int weight[64]={120,-20, 20,  5,  5, 20,-20,120,
-		      -20,-40, -5, -5, -5, -5,-40,-20,
-		       15, -5, 15,  3,  3, 15, -5, 15,
+		      -20,-40, 15, -5, -5, 15,-40,-20,
+		       15, 15, 15,  3,  3, 15, 15, 15,
 		        5, -5,  3, 20, 20,  3, -5,  5,
 		        5, -5,  3, 20, 20,  3, -5,  5,
-		       15, -5, 15,  3,  3, 15, -5, 15,
-		      -20,-40, -5, -5, -5, -5,-40,-20,
+		       15, 15, 15,  3,  3, 15, 15, 15,
+		      -20,-40, 15, -5, -5, 15,-40,-20,
 		      120,-20, 20,  5,  5, 20,-20,120};
 
 int check_legal_flip(int row, int column, int my_color, int flip, unsigned long long *, unsigned long long *);
@@ -82,6 +85,7 @@ int alpha_beta(int alpha, int beta, int my_color, unsigned long long my_board, u
 	if(depth+move-1==64){	//perfect search
 		my_count=count_color(my_board);
 		opponent_count=count_color(opponent_board);
+		//printf("%d\n",my_count-opponent_count);
 		return my_count-opponent_count;
 	}
 	if(depth==DEPTH){
@@ -105,11 +109,13 @@ int alpha_beta(int alpha, int beta, int my_color, unsigned long long my_board, u
 			}
 		/*modify the calculate formula parameter here*/
 //		printf("%d %d\n",value,mobility);
-		if(depth+move<50)
-			return value+mobility*80;
-		else{
-			return value+mobility*120;
-		}
+		if(STAGE_1)
+//			return value+mobility*80;
+			return FORMULA_1;
+		else
+//			return value+mobility*120;
+			return FORMULA_2;
+		
 	}
 	check=1;
 	check<<=63;
@@ -180,7 +186,7 @@ int game(int turn)
 						break;
 					}
 			if(row==9){
-				printf("no legal move, pass\n");
+				printf("!!!!! no legal move, pass\n");
 				++pass;
 				--move;
 				continue;
